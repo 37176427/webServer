@@ -3,7 +3,7 @@
 layui.define(function (a) {
     var b = {
         base_server: "/v1/",
-        tableName: "easyweb-jwt",
+        tableName: "heasy-web",
         pageTabs: false,
         openTabCtxMenu: true,
         maxTabNum: 20,

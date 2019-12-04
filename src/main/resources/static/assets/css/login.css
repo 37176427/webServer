@@ -1,8 +1,7 @@
 /** 登录页面样式 */
 
 body {
-    background-image: url("../../assets/images/bg_login.svg");
-    background-position: center 110px;
+    background-image: url("../../assets/images/bg_login.jpg");
     background-repeat: no-repeat;
     background-size: 100%;
     background-color: #f0f2f5;
@@ -144,7 +143,7 @@ body {
 }
 
 .login-header {
-    color: rgba(0, 0, 0, .85) !important;
+    color: #009688 !important;
 }
 
 .login-footer {

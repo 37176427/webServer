@@ -1,6 +1,6 @@
 /*
 SQLyog Ultimate v12.08 (64 bit)
-MySQL - 5.6.34-log : Database - easyweb-jwt
+MySQL - 5.6.34-log : Database - heasy-web
 *********************************************************************
 */
 
@@ -12,9 +12,9 @@ MySQL - 5.6.34-log : Database - easyweb-jwt
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`easyweb-jwt` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`heasy-web` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 
-USE `easyweb-jwt`;
+USE `heasy-web`;
 
 /*Table structure for table `oauth_token` */
 
