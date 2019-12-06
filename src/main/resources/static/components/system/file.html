@@ -9,16 +9,34 @@
             <div class="layui-form toolbar">
                 <div class="layui-form-item">
                     <div class="layui-inline">
-                        <div class="inputs">
-                            <input id="name" name="name" class="layui-input" type="text" placeholder="文件名"/>
+                        <div class="layui-input-inline">
+                            <input id="name" class="layui-input" type="text" placeholder="文件名"/>
                         </div>
-                        <div class="layui-input-inline" style="padding: 5px">
+                        <div class="layui-input-inline">
+                            <input id="type" class="layui-input" type="text" placeholder="文件类型"/>
+                        </div>
+                        <!--<div class="inputs">-->
+                        <!--<input id="publishTime" class="layui-input" type="text" placeholder="发布时间"/>-->
+                        <!--</div>-->
+                        <div class="layui-input-inline">
                             <button id="searchBtn" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
                             </button>
                             <button id="clearBtn" class="layui-btn icon-btn"><i
                                     class="layui-icon layui-icon-refresh-3"></i>重置
                             </button>
                         </div>
+                        <div class="layui-input-inline">
+                            <div id="process" class="layui-progress layui-progress-big" lay-filter="demo"
+                                 lay-showPercent="true">
+                                <div class="layui-progress-bar" lay-percent="0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="float: right;margin: 5px">
+                        <button id="upload" class="layui-btn" style="background-color:#6293ff"><i
+                                class="layui-icon layui-icon-upload-circle" lay-filter="upload"></i>上传文件
+                        </button>
+                        <p id="demoText"></p>
                     </div>
                 </div>
                 <table class="layui-table" id="table" lay-filter="table"></table>
@@ -26,42 +44,11 @@
         </div>
     </div>
 </div>
-
-<!-- 表格操作列 -->
-<script type="text/html" id="tableBar">
-    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">详情</a>
+<script type="text/html" id="downTpl">
+    <a href="/media/{{d.name}}" target="_blank" class="layui-table-link" download="">下载</a>
 </script>
-<!-- 表单弹窗 -->
-<script type="text/html" id="form">
-    <form lay-filter="fileForm" class="layui-form model-form">
-        <div class="layui-form-item">
-            <div class="layui-inline">
-                <label class="layui-form-label">文件名</label>
-                <div class="layui-input-inline">
-                    <input name="name" placeholder="文件名" type="text" class="layui-input unmodify"
-                           lay-verify="required"/>
-                </div>
-                <label class="layui-form-label">大小</label>
-                <div class="layui-input-inline">
-                    <input name="size" placeholder="大小" type="text" class="layui-input"/>
-                </div>
-                <label class="layui-form-label">类型</label>
-                <div class="layui-input-inline">
-                    <input name="type" placeholder="类型" type="text" class="layui-input"/>
-                </div>
-            </div>
-        </div>
-        <div class="layui-form-item layui-form-text">
-            <div class="layui-form-item text-right">
-                <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
-                <button class="layui-btn" lay-filter="formSubmit" lay-submit>保存</button>
-            </div>
-        </div>
-    </form>
-</script>
-
 <script>
-    layui.use(['layer', 'form', 'table', 'util', 'formSelects', 'admin', 'config', 'laydate'], function () {
+    layui.use(['layer', 'form', 'table', 'util', 'formSelects', 'admin', 'config', 'laydate', 'upload', 'element'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var form = layui.form;
@@ -71,6 +58,8 @@
         var admin = layui.admin;
         var config = layui.config;
         var laydate = layui.laydate;
+        var upload = layui.upload;
+        var element = layui.element;
         var mRoles = [];  // 全部角色
         // laydate.render({
         //     elem: '#startTime'
@@ -80,8 +69,34 @@
         //     elem: '#endTime'
         //     , type: 'datetime'
         // });
-        //初始化执行周期map
-
+        //指定允许上传的文件类型
+        var up = upload.render({
+            elem: '#upload'
+            , data: {access_token: config.getToken()}
+            , url: config.base_server + '/file'
+            , accept: 'file' //普通文件
+            , size: 1024 * 1024 * 2 //2GB限制
+            , progress: function (n) {
+                var percent = n + '%' //获取进度百分比
+                element.progress('demo', percent); //可配合 layui 进度条元素使用
+            }
+            , done: function (res) {
+                //如果上传失败
+                if (res.code !== 200) {
+                    return layer.msg('上传失败', {icon: 2, time: 1500});
+                }
+                //上传成功
+                table.render(tableOptions);
+                return layer.msg(res.msg, {icon: 1, time: 1500});
+            }, error: function () {
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function () {
+                    up.upload();
+                });
+            }
+        });
         form.render();
         var tableOptions = {
             elem: '#table',
@@ -96,31 +111,35 @@
             cellMinWidth: 100,
             cols: [[
                 {type: 'checkbox'},
-                {field: 'name', title: '文件名'},
-                {field: 'size', title: '文件大小'},
+                {field: 'name', title: '文件名', align: 'center'},
+                {field: 'size', title: '文件大小', align: 'center'},
                 {
-                    field: 'date', title: '修改时间', width: 200, sort: true, templet: function (d) {
+                    field: 'date', title: '创建时间', width: 200, sort: true, templet: function (d) {
                         if (d.date) {
                             return layui.util.toDateString(d.date, 'yyyy-MM-dd HH:mm:ss');
                         } else return "暂无";
+                    }, align: 'center'
+                },
+                {
+                    field: 'type', title: '文件类型', align: 'center', templet: function (d) {
+                        if (d.type) {
+                            return d.type;
+                        } else return "文件";
                     }
                 },
-                {field: 'type', title: '文件类型'},
-                {align: 'center', toolbar: '#tableBar', title: '操作', width: 230, fixed: 'right'}
-            ]], done: function (res) {
-                res.data.forEach(function (item, index) {
-                    //todo 加载完成后要做的事
-                });
-            }
+                {field: 'type', title: '操作', align: 'center', templet: '#downTpl'}
+            ]]
         };
         // 渲染表格
         table.render(tableOptions);
         // 搜索按钮点击事件
         $('#searchBtn').click(function () {
             var name = $('#name').val().trim();
+            var type = $('#type').val().trim();
             table.reload('table', {
                 where: {
-                    name: name
+                    name: name,
+                    type: type
                 }
             });
         });
@@ -128,6 +147,7 @@
         //重置按钮点击事件
         $('#clearBtn').click(function () {
             $('#name').val('');
+            $('#type').val('');
             table.render(tableOptions);
             form.render();
         });
@@ -155,8 +175,8 @@
                     }, 'DELETE');
                 });
             } else */
-            if (layEvent === 'edit') { // 修改数据
-                showEditModel(data);
+            if (layEvent === 'download') { // 修改数据
+                download(data);
             }
         });
 
