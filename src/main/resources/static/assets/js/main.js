@@ -31,6 +31,10 @@ layui.config({
         if (200 == res.code) {
             config.putUser(res.user);
             $('#huName').text(res.user.nickName);
+        } else if (302 == res.code) {
+            layer.msg(res.msg, {icon: 2,time:1000});
+            config.removeToken();
+            location.replace('login.html');
         } else {
             layer.msg('获取用户失败', {icon: 2});
         }

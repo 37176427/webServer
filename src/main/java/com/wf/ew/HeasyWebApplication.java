@@ -6,9 +6,9 @@ import org.wf.jwtp.configuration.EnableJwtPermission;
 
 @EnableJwtPermission
 @SpringBootApplication
-public class EasyWebApplication {
+public class HeasyWebApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(EasyWebApplication.class, args);
+        SpringApplication.run(HeasyWebApplication.class, args);
     }
 }

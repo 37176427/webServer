@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.wf.jwtp.exception.ExpiredTokenException;
 import org.wf.jwtp.exception.TokenException;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,8 +29,13 @@ public class MyExceptionHandler {
             map.put("code", ((IException) ex).getCode());
             map.put("msg", ex.getMessage());
         } else if (ex instanceof TokenException) {
-            map.put("code", ((TokenException) ex).getCode());
-            map.put("msg", ex.getMessage());
+            if (ex instanceof ExpiredTokenException) {
+                map.put("code", 302);
+                map.put("msg", "登录已过期");
+            } else {
+                map.put("code", ((TokenException) ex).getCode());
+                map.put("msg", ex.getMessage());
+            }
         } else {
             String message = ex.getMessage();
             map.put("code", 500);
