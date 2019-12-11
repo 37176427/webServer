@@ -8,7 +8,29 @@
         <div class="layui-card-body">
             <div class="layui-form toolbar">
                 <div class="layui-form-item">
-                    <div class="layui-inline">
+
+                    <div class="layui-inline" style="margin: 5px">
+                        <button id="upload" class="layui-btn" style="background-color:#6293ff"><i
+                                class="layui-icon layui-icon-upload-circle" lay-filter="upload"></i>上传文件
+                        </button>
+                    </div>
+
+                    <div class="layui-inline" style="margin: 5px">
+                        <div class="layui-input-inline" style="width: 400px">
+                            <div class="layui-progress layui-progress-big" lay-filter="demo" lay-showPercent="true">
+                                <div class="layui-progress-bar layui-bg-blue" lay-percent="0%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline" style="margin: 5px">
+                        <div class="layui-input-inline">
+                            <p class="layui-text" id="msg"></p>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline" style="float: right;margin: 5px">
                         <div class="layui-input-inline">
                             <input id="name" class="layui-input" type="text" placeholder="文件名"/>
                         </div>
@@ -25,19 +47,9 @@
                                     class="layui-icon layui-icon-refresh-3"></i>重置
                             </button>
                         </div>
-                        <div class="layui-input-inline">
-                            <div id="process" class="layui-progress layui-progress-big" lay-filter="demo"
-                                 lay-showPercent="true">
-                                <div class="layui-progress-bar" lay-percent="0%"></div>
-                            </div>
-                        </div>
                     </div>
-                    <div style="float: right;margin: 5px">
-                        <button id="upload" class="layui-btn" style="background-color:#6293ff"><i
-                                class="layui-icon layui-icon-upload-circle" lay-filter="upload"></i>上传文件
-                        </button>
-                        <p id="demoText"></p>
-                    </div>
+
+
                 </div>
                 <table class="layui-table" id="table" lay-filter="table"></table>
             </div>
@@ -70,28 +82,41 @@
         //     , type: 'datetime'
         // });
         //指定允许上传的文件类型
+        var i, j, filename;
         var up = upload.render({
             elem: '#upload'
             , data: {access_token: config.getToken()}
             , url: config.base_server + '/file'
             , accept: 'file' //普通文件
             , size: 1024 * 1024 * 2 //2GB限制
+            , choose: function (obj) {
+                obj.preview(function (index, file, result) {
+                    filename = file.name;
+                    $('#msg').text(filename);
+                });
+            }
             , progress: function (n) {
-                var percent = n + '%' //获取进度百分比
-                element.progress('demo', percent); //可配合 layui 进度条元素使用
+                element.progress('demo', n + '%'); //可配合 layui 进度条元素使用
+            }, before: function (n) {
+                $('#upload').attr("disabled", 'disabled');
+                j = layer.load(2)
             }
             , done: function (res) {
-                //如果上传失败
-                if (res.code !== 200) {
-                    return layer.msg('上传失败', {icon: 2, time: 1500});
-                }
-                //上传成功
+                layer.close(j);
+                $('#upload').removeAttr("disabled");
                 table.render(tableOptions);
-                return layer.msg(res.msg, {icon: 1, time: 1500});
+                element.progress('demo', '0%');
+                if (res.code === 200) {
+                    $('#msg').text('上传完成:' + filename);
+                    return layer.msg(res.msg, {icon: 1, time: 1500});
+                }
+                $('#msg').text(res.msg + filename);
+                return layer.msg(res.msg, {icon: 2, time: 1500});
             }, error: function () {
                 //演示失败状态，并实现重传
-                var demoText = $('#demoText');
-                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                layer.close(j);
+                var demoText = $('#msg');
+                demoText.html('上传失败,<a class="layui-btn demo-reload">重试</a>');
                 demoText.find('.demo-reload').on('click', function () {
                     up.upload();
                 });
@@ -151,7 +176,6 @@
             table.render(tableOptions);
             form.render();
         });
-
 
         // 工具条点击事件
         table.on('tool(table)', function (obj) {

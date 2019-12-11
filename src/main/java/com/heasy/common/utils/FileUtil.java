@@ -2,9 +2,6 @@ package com.heasy.common.utils;
 
 import com.heasy.common.enums.FileUnitEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -70,6 +67,5 @@ public class FileUtil {
      */
     public static String getDir() {
         return dir;
-
     }
 }

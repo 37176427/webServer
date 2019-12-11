@@ -105,7 +105,7 @@ public class FileController {
         log.info("开始上传文件：{} ,文件容量：{}", name, FileUtil.getFileSize(length));
         String dir = FileUtil.getDir();
         File f = new File(dir, name);
-        if (f.exists()){
+        if (f.exists() && f.isFile()){
             return JsonResult.error("文件名重复！");
         }
         try {
